@@ -1,0 +1,74 @@
+From 752e3fb8485aba37cc8b9249b5309e232c989b7e Mon Sep 17 00:00:00 2001
+From: TheScarastic <warabhishek@gmail.com>
+Date: Tue, 2 Oct 2018 10:18:38 -0400
+Subject: [PATCH 11/14] Revert "Remove getIntWithSubId in TelephonyManager."
+
+This reverts commit ccc427426f418d6de93ab3bc0654cc377f1e3390.
+
+Change-Id: Ie9d46504097883f3159feb24c736379dd633a92e
+---
+ .../android/telephony/TelephonyManager.java   | 41 +++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+
+diff --git a/telephony/java/android/telephony/TelephonyManager.java b/telephony/java/android/telephony/TelephonyManager.java
+index 37cdb52f7a3..d7a2a6a1bdf 100644
+--- a/telephony/java/android/telephony/TelephonyManager.java
++++ b/telephony/java/android/telephony/TelephonyManager.java
+@@ -18,6 +18,8 @@ package android.telephony;
+ 
+ import static com.android.internal.util.Preconditions.checkNotNull;
+ 
++import android.provider.Settings;
++import android.provider.Settings.SettingNotFoundException;
+ import android.annotation.IntDef;
+ import android.annotation.Nullable;
+ import android.annotation.RequiresPermission;
+@@ -6628,6 +6630,45 @@ public class TelephonyManager {
+         return false;
+     }
+ 
++    /**
++     * This function retrieves value for setting "name+subId", and if that is not found
++     * retrieves value for setting "name", and if that is not found throws
++     * SettingNotFoundException
++     *
++     * @hide
++     */
++    public static int getIntWithSubId(android.content.ContentResolver cr, String name, int subId)
++            throws SettingNotFoundException {
++        try {
++            return Settings.Global.getInt(cr, name + subId);
++        } catch (SettingNotFoundException e) {
++            try {
++                int val = Settings.Global.getInt(cr, name);
++                Settings.Global.putInt(cr, name + subId, val);
++
++                /* We are now moving from 'setting' to 'setting+subId', and using the value stored
++                 * for 'setting' as default. Reset the default (since it may have a user set
++                 * value). */
++                int default_val = val;
++                if (name.equals(Settings.Global.MOBILE_DATA)) {
++                    default_val = "true".equalsIgnoreCase(
++                            SystemProperties.get("ro.com.android.mobiledata", "true")) ? 1 : 0;
++                } else if (name.equals(Settings.Global.DATA_ROAMING)) {
++                    default_val = "true".equalsIgnoreCase(
++                            SystemProperties.get("ro.com.android.dataroaming", "false")) ? 1 : 0;
++                }
++
++                if (default_val != val) {
++                    Settings.Global.putInt(cr, name, default_val);
++                }
++
++                return val;
++            } catch (SettingNotFoundException exc) {
++                throw new SettingNotFoundException(name);
++            }
++        }
++    }
++
+     /**
+      * Returns the IMS Registration Status for a particular Subscription ID.
+      *
+-- 
+2.19.1
+

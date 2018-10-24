@@ -1,0 +1,37 @@
+From 36fd429d982f3b963601b7e7ac7d0b6d8d80fc17 Mon Sep 17 00:00:00 2001
+From: Pierre-Hugues Husson <pierre-hugues.husson@softathome.com>
+Date: Tue, 18 Sep 2018 16:32:42 +0200
+Subject: [PATCH] Allow iface to be called other than the provided one
+
+This restores the behaviour of O/O-MR1
+It would probably be nicer to check for vndk version
+
+Change-Id: If12e5305cf8a606a6c5fdb5c62e0a5fcc3b1f373
+---
+ server.cpp | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/server.cpp b/server.cpp
+index 59745f1..1b02a38 100644
+--- a/server.cpp
++++ b/server.cpp
+@@ -338,6 +338,16 @@ bool Server::SetupInterface(const std::string& iface_name,
+     }
+   }
+ 
++  for (const auto& iface : interfaces_) {
++      LOG(ERROR) << "Got iface '" << iface.name << "' vs '" << iface_name << "'";
++      if (iface.name != "p2p0" &&
++              !android::base::StartsWith(iface.name, "aware_data")) {
++          *interface = iface;
++          return true;
++      }
++
++  }
++
+   LOG(ERROR) << "No usable interface found";
+   return false;
+ }
+-- 
+2.19.1
+

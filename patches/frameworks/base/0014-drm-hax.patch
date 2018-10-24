@@ -1,0 +1,35 @@
+From 00f6b857aa9123f929bd0f0f819409db7fc28909 Mon Sep 17 00:00:00 2001
+From: TheScarastic <warabhishek@gmail.com>
+Date: Wed, 17 Oct 2018 08:45:29 -0400
+Subject: [PATCH 14/14] drm: hax
+
+Change-Id: I8f14d90291988cb5c10e00e3495ea9609fa89c01
+---
+ media/jni/android_media_MediaDrm.cpp | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/media/jni/android_media_MediaDrm.cpp b/media/jni/android_media_MediaDrm.cpp
+index 54541f02f57..f8a3a271666 100644
+--- a/media/jni/android_media_MediaDrm.cpp
++++ b/media/jni/android_media_MediaDrm.cpp
+@@ -1394,12 +1394,12 @@ static jint android_media_MediaDrm_getMaxSessionCount(JNIEnv *env,
+         return 0;
+     }
+ 
+-    uint32_t open = 0, max = 0;
+-    status_t err = drm->getNumberOfSessions(&open, &max);
++    uint32_t max = 1;
++//    status_t err = drm->getNumberOfSessions(&open, &max);
+ 
+-    if (throwExceptionAsNecessary(env, err, "Failed to get number of sessions")) {
+-        return 0;
+-    }
++//    if (throwExceptionAsNecessary(env, err, "Failed to get number of sessions")) {
++  //      return 0;
++   // }
+     return max;
+ }
+ 
+-- 
+2.19.1
+
